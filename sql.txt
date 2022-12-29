@@ -1,0 +1,69 @@
+create view vu_products_list as select `ci_products`.`product_id` AS `product_id`,`ci_products`.`product_name` AS `product_name`,`ci_products`.`status` AS `product_status`,`ci_products`.`item_code` AS `item_code`,`ci_products`.`product_code` AS `product_code`,`ci_products`.`product_price` AS `product_price`,(((`ci_production`.`add_cost` * `ci_production`.`tax`) + `ci_production`.`add_cost`) + `ci_production`.`shipping`) AS `total_price`,`ci_production`.`category_id` AS `category_id`,`ci_category`.`category_type` AS `category_type`,`ci_seller`.`seller_id` AS `seller_id`,`ci_seller`.`user_id` AS `user_id`,`ci_seller`.`shop_name` AS `shop_name`,`ci_seller`.`seller_type` AS `seller_type`,`ci_seller`.`seller_status` AS `seller_status`,`ci_seller`.`seller_verify` AS `seller_verify`,`ci_seller`.`shop_image` AS `shop_image`,`ci_seller`.`seller_created` AS `seller_created`,`ci_production`.`description` AS `description`,`ci_production`.`add_cost` AS `add_cost`,`ci_production`.`shipping` AS `shipping`,`ci_production`.`tax` AS `tax`,sum(`ci_inventory`.`qty`) AS `stock`,max(`ci_production`.`weight`) AS `weight`,max(`ci_production`.`size`) AS `size`,ci_images.image_id as image_id,`ci_images`.`file_name` AS `image_file` 
+from `ci_products` 
+join `ci_inventory` on `ci_products`.`product_id` = `ci_inventory`.`product_id` 
+join `ci_production` on `ci_production`.`product_id` = `ci_products`.`product_id` 
+join `ci_category` on `ci_category`.`category_id` = `ci_production`.`category_id` 
+join `ci_images` on `ci_images`.`product_id` = `ci_products`.`product_id` 
+join `ci_seller` on `ci_seller`.`seller_id` = `ci_products`.`seller_id` 
+where (`ci_inventory`.`owner_type` = 'company') 
+group by `ci_inventory`.`product_id`,`ci_products`.`product_id`,`ci_production`.`product_id`,`ci_images`.`image_id` order by `ci_products`.`seller_id`;
+
+create VIEW `view_order_detail`  AS  select `vu_products_list`.`product_id` AS `product_id`,`vu_products_list`.`product_name` AS `product_name`,`vu_products_list`.`product_status` AS `product_status`,`vu_products_list`.`item_code` AS `item_code`,`vu_products_list`.`product_code` AS `product_code`,`vu_products_list`.`product_price` AS `product_price`,`vu_products_list`.`total_price` AS `total_price`,`vu_products_list`.`category_id` AS `category_id`,`vu_products_list`.`category_type` AS `category_type`,`vu_products_list`.`seller_id` AS `seller_id`,`vu_products_list`.`user_id` AS `user_id`,`vu_products_list`.`shop_name` AS `shop_name`,`vu_products_list`.`seller_type` AS `seller_type`,`vu_products_list`.`seller_status` AS `seller_status`,`vu_products_list`.`seller_verify` AS `seller_verify`,`vu_products_list`.`shop_image` AS `shop_image`,`vu_products_list`.`seller_created` AS `seller_created`,`vu_products_list`.`description` AS `description`,`vu_products_list`.`add_cost` AS `add_cost`,`vu_products_list`.`shipping` AS `shipping`,`vu_products_list`.`tax` AS `tax`,`vu_products_list`.`stock` AS `stock`,`vu_products_list`.`weight` AS `weight`,`vu_products_list`.`size` AS `size`,`vu_products_list`.`image_file` AS `image_file`,`coi`.`order_id` AS `order_id`,`coi`.`ordered_price` AS `ordered_price`,`coi`.`modal_price` AS `modal_price`,`coi`.`unit_price` AS `unit_price`,`coi`.`tax_price` AS `tax_price`,`coi`.`ship_price` AS `ship_price`,`coi`.`qty` AS `qty`,`coi`.`subtotal` AS `subtotal`,`coi`.`gold_assayer` AS `gold_assayer` from (`vu_products_list` join `ci_order_items` `coi` on((`coi`.`product_id` = `vu_products_list`.`product_id`))) order by `coi`.`order_id` ;
+
+create VIEW `sale_report`  AS  select `vu`.`product_id` AS `product_id`,`vu`.`product_name` AS `product_name`,`vu`.`item_code` AS `item_code`,`coi`.`ordered_price` AS `ordered_price`,`coi`.`modal_price` AS `modal_price`,sum(`coi`.`qty`) AS `qty`,sum(`coi`.`subtotal`) AS `sale_price`,(`coi`.`modal_price` * `coi`.`qty`) AS `modal_price2`,coi.tax_price as tax,coi.ship_price as shipping,`vu`.`seller_id` AS `seller_id`,`vu`.`shop_name` AS `shop_name`,`vu`.`seller_status` AS `seller_status`,`vu`.`category_id` AS `category_id`,`vu`.`category_type` AS `category_type`,`vu`.`weight` AS `weight`,`co`.`created_date` AS `created_date`,`co`.`order_id` AS `order_id`,os.order_status as order_status 
+from 
+(
+  (`ci_orders` `co` 
+   join `ci_order_items` `coi` 
+   on
+   (
+     (`co`.`order_id` = `coi`.`order_id`)
+   )
+  ) 
+  join `vu_products_list` `vu` 
+  on
+  (
+    (`vu`.`product_id` = `coi`.`product_id`)
+  )
+  join ci_order_status os
+  on 
+  (
+    (os.order_id=coi.order_id)
+  )
+) 
+where (`os`.`order_status` = 4 and os.seller_id=coi.seller_id) group by `co`.`order_id`,`vu`.`product_id` order by `vu`.`product_id` ;
+
+create VIEW `data_user`  AS  select `u`.`id` AS `id`,`u`.`username` AS `username`,`u`.`ip_address` AS `ip_address`,`u`.`password` AS `password`,`u`.`salt` AS `salt`,`u`.`email` AS `email`,`u`.`activation_code` AS `activation_code`,`u`.`forgotten_password_code` AS `forgotten_password_code`,`u`.`forgotten_password_time` AS `forgotten_password_time`,`u`.`remember_code` AS `remember_code`,`u`.`created_on` AS `created_on`,`u`.`last_login` AS `last_login`,`u`.`active` AS `active`,`u`.`user_group` AS `user_group`,`up`.`full_name` AS `full_name`,`up`.`nic_no` AS `nic_no`,`up`.`phone` AS `phone`,`up`.`address` AS `address` from (`ci_users` `u` join `ci_users_profile` `up` on((`u`.`id` = `up`.`user_id`))) ;
+
+
+create VIEW `view_order`  AS  select `ci_orders`.`order_id` AS `order_id`,`ci_orders`.`created_by` AS `created_by`,`ci_orders`.`created_date` AS `created_date`,`ci_orders`.`total_all` AS `total_all`,`ci_orders`.`delivery_status` AS `delivery_status`,`ci_orders`.`type` AS `type`,`ci_orders`.`expired` AS `expired`,`ci_orders`.`opt` AS `opt`,`ci_orders`.`weightcost_id` AS `weightcost_id`,`data_user`.`email` AS `email`,`data_user`.`user_group` AS `user_group`,`data_user`.`full_name` AS `full_name`,`data_user`.`nic_no` AS `nic_no`,`data_user`.`phone` AS `phone`,`data_user`.`address` AS `address`,`ci_shipping`.`ship_name` AS `ship_name`,`ci_shipping`.`ship_phone` AS `ship_phone`,`ci_shipping`.`ship_address` AS `ship_address`,`ci_payment`.`payment_id` AS `payment_id`,`ci_payment`.`payment_date` AS `payment_date`,`ci_payment`.`payment_type` AS `payment_type`,`ci_payment`.`reference_note` AS `reference_note`,`ci_payment`.`payment_amount` AS `payment_amount`,`ci_payment`.`verification_note` AS `verification_note`,`ci_payment`.`att_file` AS `att_file`,`ci_payment`.`recorded_date` AS `recorded_date` 
+from ci_orders 
+join `ci_shipping` on `ci_shipping`.`order_id` = `ci_orders`.`order_id`
+join `ci_payment` on `ci_payment`.`order_id` = `ci_orders`.`order_id` 
+join `data_user` on `data_user`.`id` = `ci_orders`.`created_by` ;
+
+
+create view data_seller as select 
+s.seller_id as seller_id,s.shop_name as shop_name,s.seller_type as seller_type,s.seller_status as seller_status,s.seller_verify as seller_verify,s.shop_image as shop_image,s.seller_created as seller_created,s.user_id as user_id,s.seller_bank as seller_bank,s.seller_account as seller_account,
+u.username as username,u.email as email,
+up.full_name as full_name,up.phone as phone, up.address as address
+from ci_seller s
+join ci_users u on u.id=s.user_id
+join ci_users_profile up on up.user_id=s.user_id
+group by s.seller_id;
+
+create view generate_report as
+select sr.product_id,sr.product_name,sr.item_code,sr.ordered_price,sr.modal_price,sr.qty,sr.shipping,sr.tax,sr.sale_price,sr.modal_price2,sr.seller_id,sr.shop_name,sr.seller_status,sr.category_id,sr.category_type,sr.weight,
+co.order_id,co.created_by,co.created_date,co.total_weight,co.total_all,
+cb.billing_id,cb.bill_name,cb.bill_email,cb.bill_phone,cb.bill_address,
+cs.shipping_id,cs.ship_name,cs.ship_phone,cs.ship_address,
+cup.full_name,cup.phone,cup.address,cu.email
+from sale_report sr 
+join ci_orders co on co.order_id=sr.order_id 
+join ci_billing cb on cb.order_id=co.order_id 
+join ci_shipping cs on cs.order_id=co.order_id 
+join ci_users_profile cup on cup.user_id=co.created_by
+join ci_users cu on cu.id=cup.user_id
+order by co.order_id asc
+
+

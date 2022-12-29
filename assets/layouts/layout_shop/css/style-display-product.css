@@ -1,0 +1,98 @@
+
+.content {
+  position: relative;
+  max-width: 400px;
+  margin: auto;
+  overflow: hidden;
+}
+
+.content .content-overlay {
+  background-color: #000000;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  opacity: 0;
+  -webkit-transition: all 0.4s ease-in-out 0s;
+  -moz-transition: all 0.4s ease-in-out 0s;
+  transition: all 0.4s ease-in-out 0s;
+}
+
+.content:hover .content-overlay{
+  opacity: .9;
+  /*background :#daa520;*/
+  background: linear-gradient(to top, #ffffff 0%, #189ca2 100%);
+
+}
+
+.content-image{
+	width:100%;
+}
+
+.content-details {
+  position: absolute;
+  text-align: center;
+  padding-left: 1em;
+  padding-right: 1em;
+  width: 100%;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  -webkit-transition: all 0.3s ease-in-out 0s;
+  -moz-transition: all 0.3s ease-in-out 0s;
+  transition: all 0.3s ease-in-out 0s;
+}
+
+.content:hover .content-details{
+  top: 50%;
+  left: 50%;
+  opacity: 1;
+}
+
+.fadeIn-bottom{
+  top: 80%;
+}
+
+.bottom {
+	@include transition();
+	@extend .p1-gradient-bg;
+	a {
+		display: inline-block;
+		width: 25%;
+		line-height: 40px;
+		text-align: center;
+		span {
+			color: #ffffff;
+		}
+		&:hover {
+			span {
+				color: #ffffff;
+			}
+			background: #ffffff;
+			box-shadow: 2.828px 2.828px 15px 0px rgba(0, 0, 0, 0.1);
+		}
+	}
+	@include transition (all .3s linear);
+}
+
+.quarter-circle-bottom-left {
+    z-index: 2;
+    position: absolute;
+    width: 45px;
+    height: 45px;
+    background: #189ca2;
+    bottom: -1px;
+    left: 0px;
+    border-radius: 0 45px 0 0;
+    -moz-border-radius: 0 45px 0 0;
+    -webkit-border-radius: 0 45px 0 0;
+    color: white;
+    line-height: 52px;
+    font-size: 80%;
+    border: 1px solid #189ca2;
+    font-weight: bold;
+}
